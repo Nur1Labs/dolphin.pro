@@ -21,7 +21,7 @@ class BxWallTemplate extends BxDolModuleTemplate
         $this->_aTemplates = array('divider', 'balloon', 'repost', 'common', 'common_media', 'comments', 'actions');
     }
 
-    function init(&$oModule)
+    function setModule(&$oModule)
     {
         $this->_oModule = $oModule;
     }
@@ -54,36 +54,13 @@ class BxWallTemplate extends BxDolModuleTemplate
 	                    'title' => process_db_input($aResult['title'], BX_TAGS_STRIP),
 	                    'description' => process_db_input($aResult['description'], BX_TAGS_STRIP)
 	                ), $aEvent['id']);
-	
-	            if(!in_array($aEvent['type'], array('profile', 'friend'))) {
-	                $sType = $aEvent['type'];
-
-	                $iObjectId = $aEvent['object_id'];
-	                if($aEvent['action'] == 'comment_add') {
-	                	$aContent = unserialize($aEvent['content']);
-	                	$iObjectId = (int)$aContent['object_id'];
-	                }
-
-	                if($this->_oConfig->isGrouped($aEvent['type'], $aEvent['action'], $iObjectId)) {
-	                    $sType = isset($aResult['grouped']['group_cmts_name']) ? $aResult['grouped']['group_cmts_name'] : '';
-	                    $iObjectId = isset($aResult['grouped']['group_id']) ? (int)$aResult['grouped']['group_id'] : 0;
-	                }
-	
-	                $oComments = new BxWallCmts($sType, $iObjectId);
-	                if($oComments->isEnabled())
-	                    $sComments = $oComments->getCommentsFirstSystem('comment', $aEvent['id']);
-	                else
-	                    $sComments = $this->getDefaultComments($aEvent['id']);
-	            }
-	            else
-					$sComments = $this->getDefaultComments($aEvent['id']);
 
 				$sResult = $this->parseHtmlByTemplateName('balloon', array(
 		        	'post_type' => $aEvent['type'],
 		            'post_id' => $aEvent['id'],
 		            'post_owner_icon' => $this->getOwnerThumbnail((int)$aEvent['owner_id']),
 		        	'post_content' => $aResult['content'],
-		            'comments_content' => $sComments
+		            'comments_content' => $this->getComments($aEvent, $aResult)
 		        ));
 				break;
 
@@ -208,7 +185,9 @@ class BxWallTemplate extends BxDolModuleTemplate
         		break;
 
 			case BX_WALL_PARSE_TYPE_LINK:
-				$aResult['content'] = $aEvent['content'];
+				$aResult['content'] = $this->parseHtmlByContent($aEvent['content'], array(
+				    'bx_wall_get_image_url' => BX_DOL_URL_ROOT . $this->_oConfig->getBaseUri() . 'get_image/' . $aEvent['id'] . '/'
+				), array('{', '}'));
 
 				$sTmplName = 'common';
         		$aTmplVars['cpt_added_new'] = _t('_wall_added_' . $sEventType);
@@ -448,7 +427,7 @@ class BxWallTemplate extends BxDolModuleTemplate
             return array('perform_delete' => true);
 
         if($aOwner['status'] != 'Active')
-            return "";
+            return array();
 
         if($aOwner['couple'] == 0 && $aOwner['sex'] == 'male')
             $sTxtEditedProfile = _t('_wall_edited_his_profile');
@@ -477,7 +456,7 @@ class BxWallTemplate extends BxDolModuleTemplate
             return array('perform_delete' => true);
 
         if($aOwner['status'] != 'Active')
-            return "";
+            return array();
 
         if($aOwner['couple'] == 0 && $aOwner['sex'] == 'male')
             $sTxtEditedProfile = _t('_wall_edited_his_profile_status_message');
@@ -512,7 +491,7 @@ class BxWallTemplate extends BxDolModuleTemplate
 
         $aContent = unserialize($aEvent['content']);
         if(empty($aContent) || empty($aContent['object_id']))
-            return '';
+            return array();
 
 		$iItem = (int)$aContent['object_id'];
         $aItem = getProfileInfo($iItem);
@@ -522,7 +501,7 @@ class BxWallTemplate extends BxDolModuleTemplate
         bx_import('BxDolCmtsProfile');
         $oCmts = new BxDolCmtsProfile('profile', $iItem);
         if(!$oCmts->isEnabled())
-            return '';
+            return array();
 
 		$aItem['url'] = getProfileLink($iItem);
         $aComment = $oCmts->getCommentRow($iComment);
@@ -563,12 +542,12 @@ class BxWallTemplate extends BxDolModuleTemplate
 
         $aContent = unserialize($aEvent['content']);
         if(empty($aContent) || !isset($aContent['comment_id']))
-            return '';
+            return array();
 
         bx_import('BxDolCmtsProfile');
         $oCmts = new BxDolCmtsProfile('profile', $iId);
         if(!$oCmts->isEnabled())
-            return '';
+            return array();
 
         $aItem['url'] = getProfileLink($iId);
         $aComment = $oCmts->getCommentRow((int)$aContent['comment_id']);
@@ -602,7 +581,7 @@ class BxWallTemplate extends BxDolModuleTemplate
             return array('perform_delete' => true);
 
         if($aOwner['status'] != 'Active' || $aFriend['status'] != 'Active')
-            return "";
+            return array();
 
         $sOwner = getNickName((int)$aEvent['owner_id']);
 
@@ -644,10 +623,38 @@ class BxWallTemplate extends BxDolModuleTemplate
     	));
     }
 
+    function getComments($aEvent, $aResult) 
+    {
+        if(in_array($aEvent['type'], array('profile', 'friend'))) 
+            return $this->getDefaultComments($aEvent['id']);
+
+        $sType = $aEvent['type'];
+        $iObjectId = $aEvent['object_id'];
+
+        if($aEvent['action'] == 'comment_add') {
+            $aContent = unserialize($aEvent['content']);
+            $iObjectId = (int)$aContent['object_id'];
+        }
+
+        if($this->_oConfig->isGrouped($aEvent['type'], $aEvent['action'], $iObjectId)) {
+            $sType = isset($aResult['grouped']['group_cmts_name']) ? $aResult['grouped']['group_cmts_name'] : '';
+            $iObjectId = isset($aResult['grouped']['group_id']) ? (int)$aResult['grouped']['group_id'] : 0;
+        }
+
+        if($this->_oConfig->isGroupedObject($iObjectId))
+            return $this->getDefaultComments($aEvent['id']);
+
+        $oComments = new BxWallCmts($sType, $iObjectId);
+        if($oComments->isEnabled())
+            return $oComments->getCommentsFirstSystem('comment', $aEvent['id']);
+
+        return $this->getDefaultComments($aEvent['id']);
+    }
+
     function getDefaultComments($iEventId)
     {
         $oComments = new BxWallCmts($this->_oConfig->getCommentSystemName(), $iEventId);
-        return $oComments->getCommentsFirst('comment');
+        return $oComments->getCommentsFirstDefault('comment');
     }
 
     function getJsCode($sType, $aParams = array(), $aRequestParams = array())

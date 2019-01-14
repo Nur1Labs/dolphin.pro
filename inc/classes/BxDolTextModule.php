@@ -27,7 +27,7 @@ class BxDolTextModule extends BxDolModule
         parent::__construct($aModule);
 
         $this->_oConfig->init($this->_oDb);
-        $this->_oTemplate->init($this);
+        $this->_oTemplate->setModule($this);
 
         $sClassPrefix = $this->_oConfig->getClassPrefix();
 
@@ -86,6 +86,14 @@ class BxDolTextModule extends BxDolModule
 
         $oVotes = $this->_createObjectVoting($aEntry['id']);
         return $oVotes->getBigVoting();
+    }
+    function getBlockInfo($sUri)
+    {
+        $aEntry = $this->_oDb->getEntries(array('sample_type' => 'uri', 'uri' => $sUri));
+        if(empty($aEntry) || !is_array($aEntry))
+            return '';
+
+        return array($this->_oTemplate->displayBlockInfo($aEntry));
     }
     function getBlockAction($sUri)
     {

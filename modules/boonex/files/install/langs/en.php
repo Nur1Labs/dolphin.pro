@@ -9,7 +9,7 @@ $sLangCategory = 'Boonex Files';
 $aLangContent = array(
     '_sys_module_files' => 'Files',
     '_bx_files' => 'Files',
-    '_bx_files_single' => 'File',
+    '_bx_files_single' => 'file',
     '_bx_files_adm_stats' => 'Pending Files',
     '_bx_files_access_denied' => 'Access denied',
     '_bx_files_action_fave' => 'Add to Favorites',
@@ -133,6 +133,7 @@ $aLangContent = array(
     '_bx_files_save_success' => 'File info was saved',
     '_bx_files_sbs_comments' => 'New File Comments',
     '_bx_files_size' => 'Size',
+	'_bx_files_size_error' => 'Incorrect size. File should be nonempty and less than {0}.',
     '_bx_files_size_unit' => 'Kb',
     '_bx_files_special' => 'Featured files',
     '_bx_files_spy_added' => '<a href="{profile_link}">{profile_nick}</a> added a new file <a href="{entry_url}">{entry_caption}</a>',

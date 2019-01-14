@@ -182,7 +182,7 @@ class BxAdsSearchUnit extends BxTemplSearchResultText
     {
         $sCode = null;
         $aData = $this->getSearchData();
-        if (count($aData) > 0) {
+        if (is_array($aData) && count($aData) > 0) {
             $sCode .= $this->addCustomParts();
             foreach ($aData as $iKey => $aValue) {
                 $sCode .= $this->displaySearchUnit($aValue);
@@ -400,7 +400,7 @@ EOF;
         return array();
     }
 
-    function showPagination($bAdmin = false, $bChangePage = true, $bPageReload = true)
+    function showPagination($aParams = array())
     {
         $aPgnParams = array(
             'page_url' => $this->aCurrent['paginate']['page_url'],

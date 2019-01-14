@@ -138,11 +138,6 @@ class BxDolphConModule extends BxDolConnectModule
         }
     }
 
-    protected function _redirect($sUrl, $iStatus = 302)
-    {
-        header("Location:{$sUrl}", true, $iStatus);
-        exit;
-    }
 
     /**
      * @param $aProfileInfo - remote profile info
@@ -165,7 +160,7 @@ class BxDolphConModule extends BxDolConnectModule
 
         $iCsrfTokenLifetime = (int)$this->_oDb->getParam('sys_security_form_token_lifetime');
         if ($oSession->getValue('bx_dolphcon_csrf_token') === false || ($iCsrfTokenLifetime != 0 && time() - (int)$oSession->getValue('csrf_token_time') > $iCsrfTokenLifetime)) {
-            $sToken = genRndPwd(20, true);
+            $sToken = genRndPwd(20, false);
             $oSession->setValue('bx_dolphcon_csrf_token', $sToken);
             $oSession->setValue('bx_dolphcon_csrf_token_time', time());
         }

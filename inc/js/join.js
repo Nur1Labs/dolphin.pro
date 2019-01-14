@@ -34,7 +34,7 @@ function validateJoinForm( eForm ) {
             } catch(e) {
                 return false;
             }
-            
+
             doShowJoinErrors( aErrors, eForm );
         }
     } );
@@ -54,14 +54,13 @@ function doShowJoinErrors( aErrors, eForm ) {
     
     for( var iInd = 0; iInd < aErrors.length; iInd ++ ) {
         var aErrorsInd = aErrors[iInd];
-        for( var sField in aErrorsInd ) {
-            var sError = aErrorsInd[ sField ];
+        $.each(aErrorsInd, function( sField, sError ) {
             bHaveErrors = true;
-            
+
             doShowError( eForm, sField, iInd, sError );
-        }
+        });
     }
-    
+
     if( bHaveErrors )
         doShowError( eForm, 'do_submit', 0, _t('_Errors in join form') );
     else

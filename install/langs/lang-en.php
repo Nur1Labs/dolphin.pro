@@ -242,7 +242,7 @@ Try typing your password with CAPS LOCK off.
 If this fails, you can request a password that will be sent to the email address you provided when you registered.</p>
 
 ',
-  '_FORGOT' => 'Forgot your ID and/or password? Please, write your e-mail address below and we will send you your account ID and password.',
+  '_FORGOT' => 'Forgot your ID and/or password? Please, write your e-mail address below and we will send you a new password.',
   '_FREEMAIL_ALREADY_SENT' => 'You have already requested this member\'s contact information for free. You can see it in <a href="profile.php?ID={0}">their profile</a>, or in <a href="communicator.php">your Connections</a>.',
   '_FREEMAIL_BLOCK' => 'Sorry, contact information could not be sent to you. This member has blocked you.',
   '_FREEMAIL_ERROR' => 'Sorry, contact information could not be sent to you at this time. Make sure that you are logged in and  your profile is in active mode.',
@@ -658,7 +658,7 @@ By using this Site, you signify your acceptance of this policy and <a href="{1}t
 
 If you have any questions about this Privacy Policy, the practices of this site, or your dealings with this site, please <a href="{1}contact.php">contact us</a>.
 
-<div class="bx-def-font-small bx-def-font-grayed bx-def-margin-sec-top">Privacy policy created by <a href="http://www.generateprivacypolicy.com" target="_blank">Generate Privacy Policy</a></div>
+<div class="bx-def-font-small bx-def-font-grayed bx-def-margin-sec-top">Privacy policy created by <a href="http://www.privacypolicies.com" target="_blank">Generate Privacy Policy</a></div>
   ',
   '_PRIVACY_H' => 'Privacy Policy',
   '_PRIVACY_H1' => 'Privacy policy',
@@ -1173,7 +1173,7 @@ For any further information please <a href="{1}contact.php">contact us</a>
   '_adm_mbuilder_inactive_items' => 'Inactive Items',
   '_adm_mbuilder_legend' => 'Legend',
   '_adm_mbuilder_legend_custom' => 'Second level items(subitems)',
-  '_adm_mbuilder_legend_inact' => 'Inactive items',
+  '_adm_mbuilder_legend_inact' => 'All items',
   '_adm_mbuilder_legend_system' => 'System items',
   '_adm_mbuilder_legend_top' => 'Top level items',
   '_adm_mbuilder_script' => 'Script',
@@ -1196,6 +1196,7 @@ For any further information please <a href="{1}contact.php">contact us</a>
   '_adm_mmail_Send_to_members' => 'Send to members',
   '_adm_mmail_Send_to_members_info' => '{0} members agreed to receive newslatters',
   '_adm_mmail_Send_to_subscribers' => 'Send to subscribers',
+  '_adm_mmail_Sex' => 'Sex',
   '_adm_mmail_Text_email_body' => 'Text email body',
   '_adm_mmail_X_emails_was_succ_added_to_queue' => '{0} emails were successfully added to queue.',
   '_adm_mmail_emails' => 'emails',

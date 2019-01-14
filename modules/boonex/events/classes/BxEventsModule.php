@@ -522,14 +522,18 @@ class BxEventsModule extends BxDolTwigModule
     function serviceGetWallPost($aEvent)
     {
         $aParams = array(
-            'icon'                       => 'calendar',
-            'txt_object'                 => '_bx_events_wall_object',
-            'txt_added_new_single'       => '_bx_events_wall_added_new',
-            'txt_added_new_title_single' => '_bx_events_wall_added_new_title',
-            'txt_added_new_plural'       => '_bx_events_wall_added_new_items',
-            'txt_added_new_title_plural' => '_bx_events_wall_added_new_title_items',
-            'txt_privacy_view_event'     => 'view_event',
-            'obj_privacy'                => $this->_oPrivacy
+        	'icon' => 'calendar',
+            'txt_object' => '_bx_events_wall_object',
+            'txt_added_new_single' => '_bx_events_wall_added_new',
+        	'txt_added_new_title_single' => '_bx_events_wall_added_new_title',
+            'txt_added_new_plural' => '_bx_events_wall_added_new_items',
+        	'txt_added_new_title_plural' => '_bx_events_wall_added_new_title_items',
+            'txt_privacy_view_event' => 'view_event',
+            'obj_privacy' => $this->_oPrivacy,
+        	'fields' => array(
+                'owner' => 'ResponsibleID',
+                'date' => 'Date'
+            )
         );
 
         return parent::_serviceGetWallPost($aEvent, $aParams);
@@ -626,7 +630,7 @@ class BxEventsModule extends BxDolTwigModule
                 'icon'               => 'modules/boonex/events/|map_marker.png',
                 'icon_site'          => 'calendar',
                 'join_table'         => 'bx_events_main',
-                'join_where'         => "AND `p`.`Status` = 'approved'",
+                'join_where'         => $this->_getJoinWhereForWMap(),
                 'join_field_id'      => 'ID',
                 'join_field_country' => 'Country',
                 'join_field_city'    => 'City',
@@ -638,6 +642,22 @@ class BxEventsModule extends BxDolTwigModule
                 'join_field_author'  => 'ResponsibleID',
                 'join_field_privacy' => 'allow_view_event_to',
                 'permalink'          => 'modules/?r=events/view/',
+            )
+        ));
+    }
+
+    /**
+     * set to display upcoming events only on the map
+     */
+    function serviceSetUpcomingEventsOnMap()
+    {        
+        if (!$this->_oDb->isModule('wmap'))
+            return;
+
+        return BxDolService::call('wmap', 'part_update', array(
+            'events',
+            array(
+                'join_where' => $this->_getJoinWhereForWMap(),
             )
         ));
     }
@@ -1152,5 +1172,13 @@ class BxEventsModule extends BxDolTwigModule
             'location'     => $this->_formatLocation($aEntryData, false, false),
             'participants' => $aEntryData['FansCount'],
         ));
+    }
+
+    function _getJoinWhereForWMap()
+    {        
+        if ('on' == getParam('bx_events_only_upcoming_events_on_map'))
+            return "AND `p`.`Status` = 'approved' AND `EventEnd` > UNIX_TIMESTAMP()";
+        else
+            return "AND `p`.`Status` = 'approved'";
     }
 }

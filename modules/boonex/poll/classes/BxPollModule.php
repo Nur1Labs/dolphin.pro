@@ -1339,18 +1339,15 @@
                     $iValue = (int) $iValue;
 
                     // set as approved;
-                    if( isset($_POST['approve']) ) {
-                        $this -> _oDb -> setStatus($iValue, 1);
-                    } else if( isset($_POST['disapprove']) ) {
-                        $this -> _oDb -> setStatus($iValue, 0);
-                    } else if( isset($_POST['delete'])) {
+                    if (isset($_POST['approve']) || isset($_POST['disapprove']))
+					{
+                        $this -> _oDb -> setOption($iValue);
+                    } else if( isset($_POST['delete']))
+					{
                         $this->deletePoll($iValue);
-                    } else if( isset($_POST['featured'])) {
-                        $this -> _oDb -> setFeatured($iValue, 1);
-                    } else if( isset($_POST['unfeatured'])) {
-                        $this -> _oDb -> setFeatured($iValue, 0);
-                    }
-
+                    } else if(isset($_POST['featured']) || isset($_POST['unfeatured']))
+			            $this -> _oDb -> setOption($iValue, 'featured');
+            
                     $oTag = new BxDolTags();
                     $oTag -> reparseObjTags('bx_poll', $iValue);
 
@@ -1490,21 +1487,20 @@
         }
         
         /**
-         * Method for ajax approval / disaproval from action button ;
+         * Method for ajax perform actions (approval/disaproval - featured/unfeatured)  from actions button ;
          *
          * @return : (text) - Html response ;
          */        
-        function actionApprove($iPollId, $iApprove = 1)
+        function actionSetOption($iPollId, $sAction = 'approval')
         {
             $iPollId = (int)$iPollId;
             if ($iPollId)
             {
                 $iActionerId = getLoggedId();
-                $iApprove = (int)$iApprove;
                 $sJQueryJS = genAjaxyPopupJS($iPollId);
                 if (isAdmin($iActionerId) || isModerator($iActionerId))
                 {
-                    if (!$this->_oDb ->setStatus($iPollId, $iApprove))
+                    if (!$this->_oDb ->setOption($iPollId, $sAction))
                         $sMsg = '_Error';
                     else
                         $sMsg = '_Saved';                        
@@ -1516,7 +1512,6 @@
                 exit;
             }
         }
-
         /**
          * Function will generate global settings form ;
          *
@@ -1830,7 +1825,7 @@
                     ));
 
                 if($bShowPagination)
-                    $sPaginate = $this -> oSearch -> showPagination($this -> sPathToModule . $sExtraParam);
+                    $sPaginate = $this -> oSearch -> showPagination(array('module_path' => $this -> sPathToModule . $sExtraParam));
             } else
                 $sOutputCode = $bShowEmptyMsg ? MsgBox( _t('_Empty') ) : '';
 
@@ -2128,7 +2123,26 @@
                 return array('perform_delete' => true);
 
             $aItem = array_shift($aItem);
-            $aProfile = getProfileInfo((int)$aEvent['owner_id']);
+
+            $iOwner = 0;
+            if(!empty($aEvent['owner_id']))
+                $iOwner = (int)$aEvent['owner_id'];
+    
+            $iDate = 0;
+            if(!empty($aEvent['date']))
+                $iDate = (int)$aEvent['date'];
+    
+            $bItem = !empty($aItem) && is_array($aItem);
+            if($iOwner == 0 && $bItem && !empty($aItem['id_profile']))
+                $iOwner = (int)$aItem['id_profile'];
+    
+            if($iDate == 0 && $bItem && !empty($aItem['poll_date']))
+                $iDate = (int)$aItem['poll_date'];
+
+            if($iOwner == 0 || !$bItem)
+                return '';
+
+            $aProfile = getProfileInfo($iOwner);
             if(empty($aProfile) || (int)$aItem['poll_approval'] != 1 || !$this->oPrivacy->check('view', (int)$aEvent['object_id'], getLoggedId()))
                 return '';
 
@@ -2143,8 +2157,6 @@
             }
 
             $sInit = $this->getInitPollPage();
-
-            $iOwner = (int)$aEvent['owner_id'];
             $sOwner = getNickName($iOwner);
 
             //--- Single public event
@@ -2152,6 +2164,7 @@
 
             $sTextWallObject = _t('_bx_poll_wall_object');
             return array(
+            	'owner_id' => $iOwner,
                 'title' => _t('_bx_poll_wall_added_new_title', $sOwner, $sTextWallObject),
                 'description' => $aItem['poll_question'],
                 'content' => $sJs . $sCss . $sInit . $this->_oTemplate->parseHtmlByName('wall_post.html', array(
@@ -2163,7 +2176,8 @@
 	                'cnt_item_title' => $aItem['poll_question'],
 	                'cnt_item_id' => $aItem['id_poll'],
 	                'post_id' => $aEvent['id'],
-	            ))
+	            )),
+	            'date' => $iDate
             );
         }
 
@@ -2469,7 +2483,7 @@
          */
         function genPollsList(&$aActivePolls)
         {
-            $iNow = mktime();
+            $iNow = time();
 
             $sOutputCode = '';
             foreach($aActivePolls as $iKey => $aItems) {

@@ -149,7 +149,7 @@ BxSoundUpload.prototype.showErrorMsg = function(sErrorCode) {
 
 BxSoundUpload.prototype.onFileChangedEvent = function (oElement) {
 	this.changeContinueButtonStatus();
-}
+};
 
 BxSoundUpload.prototype._loading = function (bShow) {
 	$('.upload-loading-container').bx_loading(bShow);

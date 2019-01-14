@@ -589,7 +589,6 @@ EOF;
             'key_buffer_size' => array('op' => '>=', 'val' => 128*1024, 'type' => 'bytes'),
             'query_cache_limit' => array('op' => '>=', 'val' => 1000000, 'type' => 'bytes'),
             'query_cache_size' => array('op' => '>=', 'val' => 16*1024*1024, 'type' => 'bytes'),
-            'query_cache_type' => array('op' => 'strcasecmp', 'val' => 'on', 'type' => 'bool'),
             'max_heap_table_size' => array('op' => '>=', 'val' => 16*1024*1024, 'type' => 'bytes'),
             'tmp_table_size' => array('op' => '>=', 'val' => 16*1024*1024, 'type' => 'bytes'),
             'thread_cache_size ' => array('op' => '>', 'val' => 0),
@@ -745,6 +744,10 @@ EOF;
         <b>cronjobs</b>
         <pre class="code"><?php echo `crontab -l 2>&1`;?></pre>
         if you are unsure if output is correct then <a href="#manual_audit">manual server audit</a> may be reqired.
+    </li>
+    <li>
+        <b>last cronjob execution time - </b>
+        <span><?php $iCronTime = (int)getParam('sys_cron_time'); echo !empty($iCronTime) ? getLocaleDate($iCronTime, BX_DOL_LOCALE_DATE) : (function_exists('_t') ? _t('_None') : 'None'); ?></span>
     </li>
     <li>
         <b>media server</b>

@@ -117,7 +117,7 @@ class BxSitesModule extends BxDolTwigModule
         // BEGIN STW INTEGRATION
         $this->sHomeUrl = $this->_oConfig->getHomeUrl();
         $this->sHomePath = $this->_oConfig->getHomePath();
-        $this->sModuleUrl = BX_DOL_Url_ROOT . $this->_oConfig->getBaseUri();
+        $this->sModuleUrl = BX_DOL_URL_ROOT . $this->_oConfig->getBaseUri();
 
         $sThumbSuffix = 'data/images/thumbs/';
         $this->sThumbPath = $this->sHomePath.$sThumbSuffix;
@@ -148,7 +148,7 @@ class BxSitesModule extends BxDolTwigModule
     {
         $iSiteId = (int)$iSiteId;
         if (!($aSite = $this->_oDb->getSiteById($iSiteId))) {
-            $this->_oTemplate->displayPageNotFound (_t('_bx_sites_action_title_delete'));
+            $this->_oTemplate->displayPageNotFoundExt (_t('_bx_sites_action_title_delete'));
             return;
         }
 
@@ -174,12 +174,12 @@ class BxSitesModule extends BxDolTwigModule
         $iSiteId = (int)$iSiteId;
 
         if (!($aSite = $this->_oDb->getSiteById($iSiteId))) {
-            $this->_oTemplate->displayPageNotFound (_t('_bx_site_caption_edit'));
+            $this->_oTemplate->displayPageNotFoundExt (_t('_bx_site_caption_edit'));
             return;
         }
 
         if (!$this->isAllowedEdit($aSite)) {
-            $this->_oTemplate->displayAccessDenied (_t('_bx_site_caption_edit'));
+            $this->_oTemplate->displayAccessDeniedExt (_t('_bx_site_caption_edit'));
             return;
         }
 
@@ -225,17 +225,17 @@ class BxSitesModule extends BxDolTwigModule
         $aSite = is_numeric($mixedVar) ? $this->_oDb->getSiteById((int)$mixedVar) : $this->_oDb->getSiteByEntryUri(process_db_input($mixedVar));
 
         if (empty($aSite)) {
-            $this->_oTemplate->displayPageNotFound (_t('_bx_sites'));
+            $this->_oTemplate->displayPageNotFoundExt (_t('_bx_sites'));
             return;
         }
 
         if (!$this->isAllowedView($aSite)) {
-            $this->_oTemplate->displayAccessDenied($aSite['title']);
+            $this->_oTemplate->displayAccessDeniedExt($aSite['title']);
             return;
         }
 
         if ($aSite['status'] == 'pending' && !$this->isAdmin() && !($aSite['ownerid'] == $this->iOwnerId && $aEvent['ownerid']))  {
-            $this->_oTemplate->displayAccessDenied($aSite['title']);
+            $this->_oTemplate->displayAccessDeniedExt($aSite['title']);
             return;
         }
 
@@ -269,7 +269,7 @@ class BxSitesModule extends BxDolTwigModule
         $iSiteId = (int)$iSiteId;
 
         if (!($aSite = $this->_oDb->getSiteById($iSiteId))) {
-            $this->_oTemplate->displayPageNotFound (_t('_bx_sites_featured_top_menu_sitem'));
+            $this->_oTemplate->displayPageNotFoundExt (_t('_bx_sites_featured_top_menu_sitem'));
             return;
         }
 
@@ -308,7 +308,7 @@ class BxSitesModule extends BxDolTwigModule
     function actionSearch()
     {
         if (!$this->isAllowedSearch()) {
-            $this->_oTemplate->displayAccessDenied(_t('_bx_sites_caption_browse_search'), false);
+            $this->_oTemplate->displayAccessDeniedExt(_t('_bx_sites_caption_browse_search'), false);
             return;
         }
 
@@ -324,7 +324,7 @@ class BxSitesModule extends BxDolTwigModule
             $o = new BxSitesSearchResult('search', $oForm->getCleanValue('Keyword'));
 
             if ($o->isError) {
-                $this->_oTemplate->displayPageNotFound (_t('_bx_sites_caption_browse_search'));
+                $this->_oTemplate->displayPageNotFoundExt (_t('_bx_sites_caption_browse_search'));
                 return;
             }
 
@@ -332,7 +332,7 @@ class BxSitesModule extends BxDolTwigModule
                 $this->_oTemplate->pageStart();
                 echo $s;
             } else {
-                $this->_oTemplate->displayNoData (_t('_bx_sites_caption_browse_search'));
+                $this->_oTemplate->displayNoDataExt (_t('_bx_sites_caption_browse_search'));
                 return;
             }
 
@@ -359,7 +359,7 @@ class BxSitesModule extends BxDolTwigModule
         }
 
         if (!$this->isAllowedBrowse() || ('my' == $sMode && $this->iOwnerId == 0)) {
-            $this->_oTemplate->displayAccessDenied(_t('_bx_sites'), $bAjaxMode);
+            $this->_oTemplate->displayAccessDeniedExt(_t('_bx_sites'), $bAjaxMode);
             return;
         }
 
@@ -372,7 +372,7 @@ class BxSitesModule extends BxDolTwigModule
             );
 
         if ($o->isError) {
-            $this->_oTemplate->displayNoData($o->aCurrent['title'], $bAjaxMode);
+            $this->_oTemplate->displayNoDataExt($o->aCurrent['title'], $bAjaxMode);
             return;
         }
 
@@ -391,7 +391,7 @@ class BxSitesModule extends BxDolTwigModule
             } else
                 echo $s;
         } else
-            $this->_oTemplate->displayNoData($o->aCurrent['title'], $bAjaxMode);
+            $this->_oTemplate->displayNoDataExt($o->aCurrent['title'], $bAjaxMode);
     }
 
     function actionDeleteProfileSites ($iProfileId)
@@ -424,7 +424,7 @@ class BxSitesModule extends BxDolTwigModule
     function actionAdministration($sUrl = '')
     {
         if (!$this->isAdmin()) {
-            $this->_oTemplate->displayAccessDenied (_t('_bx_sites'));
+            $this->_oTemplate->displayAccessDeniedExt (_t('_bx_sites'));
             return;
         }
 
@@ -466,7 +466,7 @@ class BxSitesModule extends BxDolTwigModule
     function actionAdd()
     {
         if (!$this->isAllowedAdd()) {
-            $this->_oTemplate->displayAccessDenied(_t('_bx_sites'));
+            $this->_oTemplate->displayAccessDeniedExt(_t('_bx_sites'));
             return;
         }
 
@@ -556,7 +556,22 @@ class BxSitesModule extends BxDolTwigModule
         if($iDeleted == count($aObjectIds))
             return array('perform_delete' => true);
 
-        if(empty($aItems))
+        $iOwner = 0;
+        if(!empty($aEvent['owner_id']))
+            $iOwner = (int)$aEvent['owner_id'];
+
+        $iDate = 0;
+        if(!empty($aEvent['date']))
+            $iDate = (int)$aEvent['date'];
+
+        $bItems = !empty($aItems) && is_array($aItems);
+        if($iOwner == 0 && $bItems && !empty($aItems[0]['ownerid']))
+            $iOwner = (int)$aItems[0]['ownerid'];
+
+        if($iDate == 0 && $bItems && !empty($aItems[0]['date']))
+            $iDate = (int)$aItems[0]['date'];
+
+        if($iOwner == 0 || !$bItems)
             return '';
 
         $sCss = '';
@@ -568,7 +583,6 @@ class BxSitesModule extends BxDolTwigModule
             $this->_oTemplate->addCss(array('wall_post.css', 'main.css', 'twig.css'));
 
         $iItems = count($aItems);
-        $iOwner = (int)$aEvent['owner_id'];
         $sOwner = getNickName($iOwner);
 
         bx_import('BxTemplVotingView');
@@ -586,6 +600,7 @@ class BxSitesModule extends BxDolTwigModule
                 );
 
             return array(
+                'owner_id' => $iOwner,
                 'title' => _t('_bx_sites_wall_added_new_title_items', $sOwner, $iItems),
                 'description' => '',
                 'content' => $sCss . $this->_oTemplate->parseHtmlByName('modules/boonex/wall/|timeline_post_twig_grouped.html', array(
@@ -595,7 +610,8 @@ class BxSitesModule extends BxDolTwigModule
 	                'cpt_added_new' => _t('_bx_sites_wall_added_new_items', $iItems),
 	                'bx_repeat:items' => $aTmplItems,
 	                'post_id' => $aEvent['id']
-	            ))
+	            )),
+	            'date' => $iDate
             );
         }
 
@@ -604,6 +620,7 @@ class BxSitesModule extends BxDolTwigModule
 
         $aItem = $aItems[0];
         return array(
+        	'owner_id' => $iOwner,
             'title' => _t('_bx_sites_wall_added_new_title', $sOwner, $sTxtWallObject),
             'description' => $aItem['description'],
             'content' => $sCss . $this->_oTemplate->parseHtmlByName('modules/boonex/wall/|timeline_post_twig.html', array(
@@ -615,7 +632,8 @@ class BxSitesModule extends BxDolTwigModule
                 'cpt_item_url' => $sBaseUrl . $aItem['entryUri'],
                 'post_id' => $aEvent['id'],
                 'content' => $this->_oTemplate->unit ($aItem, 'unit_wall', $oVoting),
-	        ))
+	        )),
+	        'date' => $iDate
         );
     }
 
@@ -1172,7 +1190,7 @@ class BxSitesModule extends BxDolTwigModule
 
     // private functions
 
-    function _actionAdministrationManage($isAdminEntries)
+    function _actionAdministrationManage($isAdminEntries, $sKeyBtnDelete = '', $sKeyBtnActivate = '', $sUrl = false)
     {
         if ($_POST['action_activate'] && is_array($_POST['entry'])) {
             foreach ($_POST['entry'] as $iSiteId)
@@ -1206,10 +1224,9 @@ class BxSitesModule extends BxDolTwigModule
         return $GLOBALS['oSysTemplate']->parseHtmlByName('default_padding.html', array('content' => $this->_addSiteForm()));
     }
 
-    function _actionAdministrationSettings()
+    function _actionAdministrationSettings($sSettingsCatName = 'Sites')
     {
-        $iId = $this->_oDb->getSettingsCategory();
-
+        $iId = $this->_oDb->getSettingsCategory($sSettingsCatName);
         if(empty($iId))
             return MsgBox(_t('_sys_request_page_not_found_cpt'));
 
@@ -1310,9 +1327,9 @@ class BxSitesModule extends BxDolTwigModule
                 if ($oForm->isSubmittedAndValid()) {
                     $sUrl = process_pass_data($_POST['url']);
                     $sUrlFull = strncasecmp($sUrl, 'http://', 7) !== 0 && strncasecmp($sUrl, 'https://', 8) !== 0 ? 'http://' . $sUrl : $sUrl;
-                    $aSite = $this->_oDb->getSiteByUrl($sUrl);
+                    $aSite = $this->_oDb->getSiteByUrl(process_db_input($sUrl, BX_TAGS_STRIP));
 
-                    if (count($aSite) == 0) {
+                    if (empty($aSite) || !is_array($aSite)) {
                         $aInfo = getSiteInfo($sUrlFull);
 
                         if (!empty($aInfo)) {

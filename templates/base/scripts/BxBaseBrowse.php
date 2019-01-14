@@ -92,9 +92,6 @@ class BxBaseBrowse extends BxDolBrowse
         );
 
         $this -> oSearchProfileTmpl = new BxTemplSearchProfile();
-
-        // return all page's blocks from DB ;
-        //(new BxDolPageView($sPageName));
     }
 
     /**
@@ -365,7 +362,7 @@ class BxBaseBrowse extends BxDolBrowse
             // init some variables ;
             $sCountrySection     = '';
             $sExtendedCss        = '';
-            $aCurrentArray       = '';
+            $aCurrentArray       = array();
 
             $aUsedTemplates = array
             (

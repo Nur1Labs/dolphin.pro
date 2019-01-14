@@ -109,7 +109,7 @@ BxFileUpload.prototype.showErrorMsg = function(sErrorCode) {
 
 BxFileUpload.prototype.onFileChangedEvent = function (oElement) {
 	this.changeContinueButtonStatus();
-}
+};
 
 BxFileUpload.prototype._loading = function (bShow) {
     $('.upload-loading-container').bx_loading(bShow);

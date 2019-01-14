@@ -155,7 +155,7 @@ BxPhotoUpload.prototype.showErrorMsg = function(sErrorCode) {
 
 BxPhotoUpload.prototype.onFileChangedEvent = function (oElement) {
 	this.changeContinueButtonStatus();
-}
+};
 
 BxPhotoUpload.prototype._loading = function (bShow) {
     var oLoading = $('.upload-loading-container');

@@ -54,7 +54,7 @@ class BxWallModule extends BxDolModule
         parent::__construct($aModule);
 
         $this->_oConfig->init($this->_oDb);
-        $this->_oTemplate->init($this);
+        $this->_oTemplate->setModule($this);
 
         $this->_iOwnerId = 0;
 
@@ -140,11 +140,11 @@ class BxWallModule extends BxDolModule
     {
     	$iAuthorId = $this->_getAuthorId();
 
-        $iOwnerId = process_db_input(bx_get('owner_id'), BX_DATA_INT);
+        $iOwnerId = (int)bx_get('owner_id');
         $aContent = array(
-            'type' => process_db_input(bx_get('type'), BX_DATA_TEXT),
-            'action' => process_db_input(bx_get('action'), BX_DATA_TEXT),
-            'object_id' => process_db_input(bx_get('object_id'), BX_DATA_INT),
+            'type' => process_db_input(bx_get('type')),
+            'action' => process_db_input(bx_get('action')),
+            'object_id' => (int)bx_get('object_id'),
         );
 
         $aReposted = $this->_oDb->getReposted($aContent['type'], $aContent['action'], $aContent['object_id']);
@@ -350,6 +350,69 @@ class BxWallModule extends BxDolModule
         	'code' => 0,
         	'content' => $this->_oTemplate->getRepostedBy($iRepostedId)
         ));
+    }
+    /**
+     * Get image.
+     *
+     * @return string with image.
+     */
+	function actionGetImage($iId, $sUrl)
+    {
+        $sNoImage = $this->_oTemplate->getImageUrl('no-image.png');
+
+        $aEvent = $this->_oDb->getEvents(array('browse' => 'id', 'object_id' => $iId));
+        if(empty($aEvent) || !is_array($aEvent) || strpos($aEvent['content'], urlencode($sUrl)) === false) {
+            header("Location: " . $sNoImage);
+            exit;
+        }
+
+        $sUrl = base64_decode(urldecode($sUrl));
+
+        $sProtoHttp = 'http';
+        $sProtoHttps = 'https';
+        $sProtoSite = bx_proto();
+        $sProtoImage = bx_proto($sUrl);
+
+        if($sProtoSite == $sProtoHttp || ($sProtoSite == $sProtoHttps && $sProtoImage == $sProtoHttps)) {
+            header("Location: " . $sUrl);
+            exit;
+        }
+
+        $bImage = false;
+        $aHeaders = get_headers($sUrl);
+
+        $bHeaderCache = false;
+        $sHeaderCache = 'Cache-Control: max-age=2592000';
+
+        foreach ($aHeaders as $sHeader) {
+            //--- Check type
+            $aMatches = array();
+            if(preg_match("/^Content-Type:\s*([a-z]*)\/([a-z]*)$/i", $sHeader, $aMatches)) {
+                if($aMatches[1] == 'image' && in_array($aMatches[2], array('png', 'jpeg', 'gif')))
+                    $bImage = true;
+            }
+
+            //--- Check cache
+            $aMatches = array();
+            if(preg_match("/^Cache-Control:\s*max-age\s*=\s*([0-9]*)$/i", $sHeader, $aMatches)) {
+                $bHeaderCache = true;
+
+                if((int)$aMatches[1] < 2592000)
+                    $sHeader = $sHeaderCache;
+            }
+
+            header($sHeader);
+        }
+
+        if(!$bImage) {
+            header("Location: " . $sNoImage);
+            exit;
+        }
+
+        if(!$bHeaderCache)
+            header($sHeaderCache);
+
+        echo bx_file_get_contents($sUrl);
     }
     /**
      * Get RSS for specified owner.
@@ -1002,7 +1065,9 @@ class BxWallModule extends BxDolModule
 			'OGImage' => array('name_attr' => 'property', 'name' => 'og:image'),
 		));
         $sTitle = isset($aSiteInfo['title']) ? $aSiteInfo['title'] : $sUrl;
-        $sDescription = isset($aSiteInfo['description']) ? $aSiteInfo['description'] : '';
+        $sDescription = '';
+        if(isset($aSiteInfo['description']))
+            $sDescription = preg_replace('/[^ -\x{2122}]\s+|\s*[^ -\x{2122}]/u', '', $aSiteInfo['description']);
 
 		$sThumbnail = '';
 		if(!empty($aSiteInfo['thumbnailUrl']))
@@ -1017,7 +1082,7 @@ class BxWallModule extends BxDolModule
         		'bx_if:show_thumnail' => array(
         			'condition' => $bThumbnail,
         			'content' => array(
-        				'thumbnail' => $sThumbnail
+        				'thumbnail' => '{bx_wall_get_image_url}' . urlencode(base64_encode($sThumbnail))
         			)
         		),
 				'title' => $sTitle,
@@ -1266,7 +1331,7 @@ class BxWallModule extends BxDolModule
 		$sType = $aEvent['type'];
 		$sAction = $aEvent['action'];
 	    $iObjectId = $aEvent['object_id'];
-		if($this->_oConfig->isGrouped($sType, $sAction, $iObjectId)) 
+		if($this->_oConfig->isGrouped($sType, $sAction, $iObjectId) || $this->_oConfig->isGroupedObject($iObjectId)) 
 			return $this->_getObjectVotingDefault($aEvent['id']);
 
 		$oVoting = new BxWallVoting($sType, $iObjectId);

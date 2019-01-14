@@ -701,6 +701,8 @@ class BxDolTwigModule extends BxDolModule
         if ($isFan) {
 
             if ($this->_oDb->leaveEntry($iEntryId, $this->_iProfileId)) {
+                $this->_onEventFanRemove($iEntryId, $this->_iProfileId, $aDataEntry, '');
+                
                 $sRedirect = BX_DOL_URL_ROOT . $this->_oConfig->getBaseUri() . 'view/' . $aDataEntry[$this->_oDb->_sFieldUri];
                 echo MsgBox($sMsgLeaveSuccess) . genAjaxyPopupJS($iEntryId, 'ajaxy_popup_result_div', $sRedirect);
                 exit;
@@ -999,7 +1001,22 @@ class BxDolTwigModule extends BxDolModule
         if($iDeleted == count($aObjectIds))
             return array('perform_delete' => true);
 
-        if(empty($aItems))
+        $iOwner = 0;
+        if(!empty($aEvent['owner_id']))
+            $iOwner = (int)$aEvent['owner_id'];
+
+        $iDate = 0;
+        if(!empty($aEvent['date']))
+            $iDate = (int)$aEvent['date'];
+
+        $bItems = !empty($aItems) && is_array($aItems);
+        if($iOwner == 0 && $bItems && isset($aParams['fields']['owner']) && !empty($aItems[0][$aParams['fields']['owner']]))
+            $iOwner = (int)$aItems[0][$aParams['fields']['owner']];
+
+        if($iDate == 0 && $bItems && isset($aParams['fields']['date']) && !empty($aItems[0][$aParams['fields']['date']]))
+            $iDate = (int)$aItems[0][$aParams['fields']['date']];
+
+        if($iOwner == 0 || empty($aItems))
             return '';
 
         $sCss = '';
@@ -1011,7 +1028,6 @@ class BxDolTwigModule extends BxDolModule
             $this->_oTemplate->addCss(array('wall_post.css', 'unit.css', 'twig.css'));
 
         $iItems = count($aItems);
-        $iOwner = (int)$aEvent['owner_id'];
         $sOwner = getNickName($iOwner);
 
         bx_import('Voting', $this->_aModule);
@@ -1031,6 +1047,7 @@ class BxDolTwigModule extends BxDolModule
 
             $sTmplName = isset($aParams['templates']['grouped']) ? $aParams['templates']['grouped'] : 'modules/boonex/wall/|timeline_post_twig_grouped.html';
             return array(
+            	'owner_id' => $iOwner,
                 'title' => _t($aParams['txt_added_new_title_plural'], $sOwner, $iItems),
                 'description' => '',
                 'content' => $sCss . $this->_oTemplate->parseHtmlByName($sTmplName, array(
@@ -1039,7 +1056,8 @@ class BxDolTwigModule extends BxDolModule
 	                'cpt_user_name' => $sOwner,
 	                'cpt_added_new' => _t($aParams['txt_added_new_plural'], $iItems),
 	                'bx_repeat:items' => $aTmplItems,
-	            ))
+	            )),
+	            'date' => $iDate
             );
         }
 
@@ -1050,6 +1068,7 @@ class BxDolTwigModule extends BxDolModule
 
         $sTmplName = isset($aParams['templates']['single']) ? $aParams['templates']['single'] : 'modules/boonex/wall/|timeline_post_twig.html';
         return array(
+        	'owner_id' => $iOwner,
             'title' => _t($aParams['txt_added_new_title_single'], $sOwner, $sTextWallObject),
             'description' => $aItem[$this->_oDb->_sFieldDescription],
             'content' => $sCss . $this->_oTemplate->parseHtmlByName($sTmplName, array(
@@ -1060,7 +1079,8 @@ class BxDolTwigModule extends BxDolModule
 	            'cpt_object' => $sTextWallObject,
 	            'cpt_item_url' => $sBaseUrl . $aItem[$this->_oDb->_sFieldUri],
 	            'content' => $this->_oTemplate->unit($aItem, 'unit', $oVoting, true),
-	        ))
+	        )),
+	        'date' => $iDate
         );
     }
 
@@ -1451,7 +1471,7 @@ class BxDolTwigModule extends BxDolModule
 
     // ================================== admin actions
 
-    function _actionAdministrationSettings ($sSettingsCatName)
+    function _actionAdministrationSettings ($sSettingsCatName = '')
     {
         if (!preg_match('/^[A-Za-z0-9_-]+$/', $sSettingsCatName))
             return MsgBox(_t('_sys_request_page_not_found_cpt'));
@@ -1480,7 +1500,7 @@ class BxDolTwigModule extends BxDolModule
         return $this->_oTemplate->parseHtmlByName('default_padding', $aVars);
     }
 
-    function _actionAdministrationManage ($isAdminEntries, $sKeyBtnDelete, $sKeyBtnActivate, $sUrl = false)
+    function _actionAdministrationManage ($isAdminEntries, $sKeyBtnDelete = '', $sKeyBtnActivate = '', $sUrl = false)
     {
         if (getPostFieldIfSet('action_activate') && (isset($_POST['entry']) && is_array($_POST['entry']))) {
 
@@ -1631,6 +1651,10 @@ class BxDolTwigModule extends BxDolModule
         // we do not need to send any notofication mail here because it will be part of standard subscription process
         $oAlert = new BxDolAlerts($this->_sPrefix, 'join', $iEntryId, $iProfileId);
         $oAlert->alert();
+
+        bx_import('BxDolSubscription');
+        $oSubscription = BxDolSubscription::getInstance();
+        $oSubscription->subscribeMember($iProfileId, $this->_sPrefix, '', $iEntryId);
     }
 
     function _onEventJoinRequest ($iEntryId, $iProfileId, $aDataEntry, $sEmailTemplate, $iMaxFans = 1000)
@@ -1653,9 +1677,15 @@ class BxDolTwigModule extends BxDolModule
 
     function _onEventFanRemove ($iEntryId, $iProfileId, $aDataEntry, $sEmailTemplate)
     {
-        $this->_notifyEmail ($sEmailTemplate, $iProfileId, $aDataEntry);
+        if ($sEmailTemplate)
+            $this->_notifyEmail ($sEmailTemplate, $iProfileId, $aDataEntry);
+        
         $oAlert = new BxDolAlerts($this->_sPrefix, 'fan_remove', $iEntryId, $iProfileId);
         $oAlert->alert();
+
+        bx_import('BxDolSubscription');
+        $oSubscription = BxDolSubscription::getInstance();
+        $oSubscription->unsubscribeMember($iProfileId, $this->_sPrefix, '', $iEntryId);        
     }
 
     function _onEventFanBecomeAdmin ($iEntryId, $iProfileId, $aDataEntry, $sEmailTemplate)
@@ -1749,7 +1779,7 @@ class BxDolTwigModule extends BxDolModule
             else
                 return '';
         } else {
-            $sPagination = $sAjaxPaginationBlockId ? $o->showPaginationAjax($sAjaxPaginationBlockId) : $o->showPagination($sUrlAdmin);
+            $sPagination = $sAjaxPaginationBlockId ? $o->showPaginationAjax($sAjaxPaginationBlockId) : $o->showPagination(array('url_admin' => $sUrlAdmin));
             $sActionsPanel = $o->showAdminActionsPanel ($sFormName, $aButtons);
         }
 

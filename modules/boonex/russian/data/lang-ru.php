@@ -655,7 +655,7 @@ $LANG= array(
 
 Если у Вас есть вопросы об этой Политике Конфиденциальности, об установленных на Сайте порядках или о Вашем опыте работы с Сайтом, пожалуйста, <a href="{1}contact.php">напишите нам</a>.
 
-<div class="bx-def-font-small bx-def-font-grayed bx-def-margin-sec-top">Политика Конфиденциальности создана с помощью сайта <a href="http://www.generateprivacypolicy.com" target="_blank">Создать Политику Конфиденциальности</a></div>
+<div class="bx-def-font-small bx-def-font-grayed bx-def-margin-sec-top">Политика Конфиденциальности создана с помощью сайта <a href="http://www.privacypolicies.com" target="_blank">Создать Политику Конфиденциальности</a></div>
   ',
   '_PRIVACY_H' => 'Конфиденциальность',
   '_PRIVACY_H1' => 'Конфиденциальность',
@@ -1170,7 +1170,7 @@ $LANG= array(
   '_adm_mbuilder_inactive_items' => 'Неактивные элементы',
   '_adm_mbuilder_legend' => 'Легенда',
   '_adm_mbuilder_legend_custom' => 'Элементы второго уроня (подэлементы)',
-  '_adm_mbuilder_legend_inact' => 'Неактивные элементы',
+  '_adm_mbuilder_legend_inact' => 'Все элементы',
   '_adm_mbuilder_legend_system' => 'Системные элементы',
   '_adm_mbuilder_legend_top' => 'Элементы верхнего уровня',
   '_adm_mbuilder_script' => 'Код',
@@ -1193,6 +1193,7 @@ $LANG= array(
   '_adm_mmail_Send_to_members' => 'Послать пользователям',
   '_adm_mmail_Send_to_members_info' => '{0} пользователей подписаны на рассылку',
   '_adm_mmail_Send_to_subscribers' => 'Послать подписчикам',
+  '_adm_mmail_Sex' => 'Пол',
   '_adm_mmail_Text_email_body' => 'Текстовое тело сообщения',
   '_adm_mmail_X_emails_was_succ_added_to_queue' => '{0} e-mail сообщений были удачно добавлены в очередь.',
   '_adm_mmail_emails' => 'E-mail сообщения',

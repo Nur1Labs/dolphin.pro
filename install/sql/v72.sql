@@ -1296,6 +1296,7 @@ INSERT INTO `sys_options` VALUES
 ('tags_last_parse_time', '0', @iCatHidden, 'Temporary value when tags cron-job was runed last time', 'digit', '', '', 51, ''),
 ('cupid_last_cron', '0', @iCatHidden, 'Temporary value when cupid mails checked was runed last time', 'text', '', '', 52, ''),
 ('sys_show_admin_help', 'on', @iCatHidden, 'Show help in admin dashboard', 'checkbox', '', '', 53, ''),
+('sys_cron_time', '', @iCatHidden, 'Last cron execution time', 'digit', '', '', 54, ''),
 
 ('sys_main_logo', '', @iCatHidden, 'Main logo file name', 'text', '', '', 60, ''),
 ('sys_main_logo_w', '', @iCatHidden, 'Main logo width', 'digit', '', '', 61, ''),
@@ -2449,7 +2450,7 @@ CREATE TABLE `Profiles` (
   KEY `DateOfBirth` (`DateOfBirth`),
   KEY `DateReg` (`DateReg`),
   KEY `DateLastNav` (`DateLastNav`),
-  FULLTEXT KEY `NickName_2` (`NickName`,`City`,`DescriptionMe`,`Tags`)
+  FULLTEXT KEY `NickName_2` (`NickName`,`FullName`,`FirstName`,`LastName`,`City`,`DescriptionMe`,`Tags`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 --
@@ -2848,7 +2849,8 @@ CREATE TABLE `RayMp3Files` (
   `Featured` tinyint(4) NOT NULL,
   `Status` enum('approved','disapproved','pending','processing','failed') NOT NULL default 'pending',
   PRIMARY KEY  (`ID`),
-  KEY (`Owner`)
+  KEY (`Owner`),
+  KEY `Uri` (`Uri`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
@@ -2915,7 +2917,8 @@ CREATE TABLE `RayVideoFiles` (
   `Source` varchar(20) NOT NULL default '',
   `Video` varchar(32) NOT NULL default '',
   PRIMARY KEY  (`ID`),
-  KEY (`Owner`)
+  KEY (`Owner`),
+  KEY `Uri` (`Uri`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 --
@@ -2958,7 +2961,8 @@ CREATE TABLE `RayVideo_commentsFiles` (
   `Views` int(12) default '0',
   `Status` enum('approved','disapproved','pending','processing','failed') NOT NULL default 'pending',
   PRIMARY KEY  (`ID`),
-  KEY (`Owner`)
+  KEY (`Owner`),
+  KEY `Uri` (`Uri`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------

@@ -464,9 +464,7 @@ function sendMail(
         return false;
     }
 
-    if ($iRecipientID) {
-        $aRecipientInfo = getProfileInfo($iRecipientID);
-    }
+    $aRecipientInfo = $iRecipientID ? getProfileInfo($iRecipientID) : array();
 
     // don't send mail to the user if he/she decided to not receive any site's notifications, unless it is critical emails (like email confirmation)
     if (!$bForceSend) {
@@ -529,7 +527,7 @@ function sendMail(
             'html'    => 'html' == $sEmailFlag ? true : false,
         );
 
-        $oZ = new BxDolAlerts('profile', 'send_mail', $aRecipientInfo['ID'], '', $aAlertData);
+        $oZ = new BxDolAlerts('profile', 'send_mail', $iRecipientID, '', $aAlertData);
         $oZ->alert();
     }
 
@@ -1813,9 +1811,9 @@ function bx_mkdir_r($sDirName, $rights = 0777)
 /**
  * Returns current site protocol http:// or https://
  */
-function bx_proto()
+function bx_proto($sUrl = BX_DOL_URL_ROOT)
 {
-    return 0 === strncmp('https', BX_DOL_URL_ROOT, 5) ? 'https' : 'http';
+    return 0 === strncmp('https', $sUrl, 5) ? 'https' : 'http';
 }
 
 /**
@@ -1846,10 +1844,10 @@ function bx_linkify($text, $sAttrs = '', $bHtmlSpecialChars = false)
         }
 
         if (strncmp(BX_DOL_URL_ROOT, $url, strlen(BX_DOL_URL_ROOT)) !== 0) {
-            $sAttrs .= ' target="_blank" ';
-            if ($bAddNofollow) {
+            if (false === stripos($sAttrs, 'target="_blank"'))
+                $sAttrs .= ' target="_blank" ';
+            if ($bAddNofollow && false === stripos($sAttrs, 'rel="nofollow"'))
                 $sAttrs .= ' rel="nofollow" ';
-            }
         }
 
         $text = substr_replace($text, '<a ' . $sAttrs . ' href="' . $url . '">' . $matches[$i][0] . '</a>',
@@ -1934,17 +1932,4 @@ function getPostFieldIfSet($sField)
 function getGetFieldIfSet($sField)
 {
     return (!isset($_GET[$sField])) ? null : $_GET[$sField];
-}
-
-/**
- * Var dumps then dies
- *
- * @param $dump
- */
-function dd($dump)
-{
-    echo '<pre>';
-    var_dump($dump);
-    echo '</pre>';
-    exit;
 }
